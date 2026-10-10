@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://b3341ujv0qhec"]
 
 [ext_resource type="Script" uid="uid://okubesdwv30m" path="res://addons/ModularPlatforms/PlatformFramework/PropOrHazard/Hazard/Hazard.gd" id="1_ry8uv"]
-[ext_resource type="Script" uid="uid://b205cvdqvwkkc" path="res://addons/ModularPlatforms/Components/hitbox_component.gd" id="2_jxd6a"]
+[ext_resource type="Script" uid="uid://b205cvdqvwkkc" path="res://addons/ModularPlatforms/Components/HitBoxComponent.gd" id="2_jxd6a"]
+
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5p6vy"]
 

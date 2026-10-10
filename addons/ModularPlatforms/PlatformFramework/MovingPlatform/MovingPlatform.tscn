@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://boxcy5m6k1suf"]
 
 [ext_resource type="Script" uid="uid://bbe0i0wdbmo7r" path="res://addons/ModularPlatforms/PlatformFramework/MovingPlatform/MovingPlatform.gd" id="1_q06lf"]
-[ext_resource type="Script" uid="uid://b205cvdqvwkkc" path="res://addons/ModularPlatforms/Components/hitbox_component.gd" id="2_hrpga"]
+[ext_resource type="Script" uid="uid://b205cvdqvwkkc" path="res://addons/ModularPlatforms/Components/HitBoxComponent.gd" id="2_hrpga"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_du4dc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_du4dc"]
 resource_local_to_scene = true
@@ -12,6 +14,7 @@ resource_local_to_scene = true
 size = Vector2(30, 3)
 
 [node name="MovingPlatform" type="AnimatableBody2D" unique_id=1770235352 node_paths=PackedStringArray("sprite", "collision_shape", "attack")]
+physics_material_override = SubResource("PhysicsMaterial_du4dc")
 script = ExtResource("1_q06lf")
 sprite = NodePath("Sprite2D")
 collision_shape = NodePath("CollisionShape2D")
