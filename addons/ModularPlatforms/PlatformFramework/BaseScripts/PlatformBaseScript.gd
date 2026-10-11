@@ -4,6 +4,7 @@
 ## The abstract base class for all platforms. Handles visual tiling, collision resizing, one-way collisions, and hazards.
 extends StaticBody2D
 
+## Emitted when texture width or height are changed.
 signal size_changed(width:int, height:int)
 
 @export_category("Assets")
@@ -169,14 +170,21 @@ signal size_changed(width:int, height:int)
 		if is_node_ready():
 			_update_attack()
 
+## Is [b]true[/b], if sprite is and [AnimatedSprite2D].
 var _is_animated: bool = false
+## Is [b]true[/b], if [member collision_shape.shape] is unique.
 var _main_shape_unique: bool = false
+## Is [b]true[/b], if [member attack.shape] is unique.
 var _attack_shape_unique: bool = false
 
+## Tracking if damage area is active if platform has a hazard.
 var _is_active:bool = false
+## Timer for the time it needs to activate.
 var _activate_timer:float
+## Timer for the time it needs to de-activate.
 var _active_timer:float
 
+## Set warnings on the Editor for the user to see.
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = []
 	if sprite and not (sprite is Sprite2D or sprite is AnimatedSprite2D):
@@ -191,21 +199,25 @@ func _get_configuration_warnings() -> PackedStringArray:
 	return warnings
 
 func _ready() -> void:
+	#Make the changes that were done through editor.
 	_update_visuals()
 	_update_attack()
-	_from_start()
+	
 	if not Engine.is_editor_hint():
+		#Set timers.
 		_activate_timer = activate_time
 		_active_timer = active_time
-		# FORCE the hazard off on frame 1 so the timer handles the initial activation
+		# FORCE the hazard off on frame 1 so the timer handles the initial activation.
 		if is_attacking and attack != null:
 			attack.set_deferred("disabled", true)
+	#Call the custom [b]_ready[/b] function.
+	_from_start()
 
 func _update_visuals() -> void:
 	if not is_node_ready():
 		return
 	
-	# 1. Update Sprite Logic
+	# 1. Update Sprite Logic.
 	if sprite != null:
 		if not _is_animated and sprite is Sprite2D:
 			sprite.texture = texture
@@ -222,7 +234,7 @@ func _update_visuals() -> void:
 			if not Engine.is_editor_hint(): 
 				sprite.play()
 	
-	# 2. Update Main Collision Logic safely
+	# 2. Update Main Collision Logic safely.
 	if collision_shape != null and collision_shape.shape != null:
 		var shape: Shape2D = collision_shape.shape
 		
@@ -235,7 +247,7 @@ func _update_visuals() -> void:
 		shape.resource_local_to_scene = true
 		collision_shape.debug_color = debug_color 
 		
-		# Handle One-Way Collision & Rotation
+		# Handle One-Way Collision & Rotation.
 		collision_shape.one_way_collision = col_enable
 		
 		var active_w: float = texture_width
@@ -259,8 +271,8 @@ func _update_visuals() -> void:
 					active_w = texture_height
 					active_h = texture_width
 		
-		# Apply sizes based on the potentially swapped dimensions
-		if !enable_texture_sizing:
+		# Apply sizes based on the potentially swapped dimensions.
+		if enable_texture_sizing:
 			if shape is RectangleShape2D:
 				shape.size = Vector2(active_w, active_h)
 			elif shape is CircleShape2D:
@@ -270,6 +282,7 @@ func _update_visuals() -> void:
 				shape.height = active_h
 			else:
 				push_warning("The ", collision_shape.name, "'s shape (", shape.get_class(), ") is not supported by Platform auto-sizing.")
+	
 	size_changed.emit(texture_width,texture_height)
 
 func _update_attack() -> void:
@@ -280,7 +293,7 @@ func _update_attack() -> void:
 	
 	var shape: Shape2D = attack.shape
 	
-	# Only duplicate ONCE
+	# Only duplicate ONCE (Duplicate so the platforms don't break each other).
 	if Engine.is_editor_hint() and not _attack_shape_unique:
 		shape = shape.duplicate()
 		attack.shape = shape
@@ -315,16 +328,16 @@ func _update_attack() -> void:
 				if shape is RectangleShape2D: shape.size = Vector2(trigger_depth, texture_height - 2.0)
 				attack.position = Vector2(half_w + (trigger_depth / 2.0), 0)
 
+## Handle on and off the attacking area.
 func _update_type_visibility() -> void:
 	if Engine.is_editor_hint() and attack != null:
 		attack.set_deferred("disabled", not is_attacking)
 
 func _process(delta: float) -> void:
-	_update(delta)
-	# Stop this from running in the editor and eating CPU
+	# Stop this from running in the editor and eating CPU.
 	if Engine.is_editor_hint(): return
 	
-	# Only run the timer if the prop is actually an attacking hazard
+	# Only run the timer if the prop is actually an attacking hazard.
 	if not is_attacking or attack == null: return
 	
 	if _is_active == false:
@@ -333,7 +346,7 @@ func _process(delta: float) -> void:
 			if _activate_timer <= 0.0:
 				_is_active = true
 				_activate_timer = activate_time
-				attack.set_deferred("disabled", false) # Turn hazard ON
+				attack.set_deferred("disabled", false) # Turn hazard ON.
 	
 	else:
 		if _active_timer > 0.0:
@@ -341,9 +354,13 @@ func _process(delta: float) -> void:
 			if _active_timer <= 0.0:
 				_is_active = false
 				_active_timer = active_time
-				attack.set_deferred("disabled", true) # Turn hazard OFF
+				attack.set_deferred("disabled", true) # Turn hazard OFF.
+	
+	#Call custom [b]_process[/b] function.
+	_update(delta)
 
 func _physics_process(delta: float) -> void:
+	#Call custom [b]_physics_process[/b] function.
 	_physics_update(delta)
 
 #----------------------Inharitance Functions-----------------------
@@ -352,7 +369,7 @@ func _physics_process(delta: float) -> void:
 func _from_start() -> void: pass
 
 ## A [b]_process[/b] replacement. Do not use [b]_process[/b]!
-func _update(_delta:float) -> void:pass
+func _update(_delta:float) -> void: pass
 
 ## A [b]_physics_process[/b] replacement. Do not use [b]_physics_process[/b]!
-func _physics_update(_delta:float) -> void:pass
+func _physics_update(_delta:float) -> void: pass
